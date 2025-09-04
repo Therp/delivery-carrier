@@ -2,7 +2,7 @@
     "name": "Tracking URL Clickable Extension",
     "summary": """
         lickable tracking URLs on pickings and sales""",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.0",
     "license": "AGPL-3",
     "maintainers": ["ntsirintanis"],
     "author": "Therp BV,Odoo Community Association (OCA)",

@@ -3,6 +3,7 @@
     <field name="name">sale.order.form.inherit.tracking.url</field>
     <field name="model">sale.order</field>
     <field name="inherit_id" ref="sale.view_order_form" />
+    <field name="priority">25</field>
     <field name="arch" type="xml">
       <xpath expr="//field[@name='carrier_id']" position="after">
         <field name="tracking_url_clickable" readonly="1" />

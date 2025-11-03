@@ -129,7 +129,7 @@ class TestDeliverySchenkerCommon(common.SavepointCase):
                 },
             ],
             "incoterm": "EXW",
-            "incotermLocation": "Test partner",
+            "incotermLocation": "San Francisco",
             "productCode": "CON",
             "measurementType": "METRIC",
             "grossWeight": "1.00",

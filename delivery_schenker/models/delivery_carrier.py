@@ -310,9 +310,7 @@ class DeliveryCarrier(models.Model):
             )
             result.append(invoice_address)
         if self.schenker_address_number:
-            (invoice_address or shipper_address)[
-                "schenkerAddressId"
-            ] = self.schenker_address_number
+            shipper_address["schenkerAddressId"] = self.schenker_address_number
         return result
 
     def _schenker_shipping_product(self):
@@ -491,7 +489,7 @@ class DeliveryCarrier(models.Model):
                     picking.sale_id.incoterm.code or self.schenker_incoterm_id.code
                 ),
                 # A maximum of 35 characters is supported
-                "incotermLocation": picking.partner_id.display_name[:35],
+                "incotermLocation": (picking.partner_id.city or "")[:35],
                 "productCode": self._schenker_shipping_product(),
                 "measurementType": self._schenker_metric_system(),
                 "grossWeight": self._schenker_shipping_information_round_weight(

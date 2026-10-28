@@ -165,6 +165,18 @@ class DeliveryCarrier(models.Model):
         help="If not delivery package or the package doesn't have defined the packaging"
         " it will default to this type",
     )
+    schenker_address_number = fields.Char(
+        "Address ID",
+        help="ID assigned by Schenker to you.\nWill be part of the sender or "
+        "if set, the invoice address.",
+    )
+    schenker_partner_invoice_id = fields.Many2one(
+        "res.partner",
+        "Invoice Address",
+        ondelete="restrict",
+        help="If set, this contact will be sent as invoice address to Schenker."
+        "\nIf Address ID is set, it will be part of it instead of the sender",
+    )
 
     def _get_schenker_credentials(self):
         """Access key is mandatory for every request while group and user are
@@ -270,10 +282,19 @@ class DeliveryCarrier(models.Model):
             or picking.company_id.partner_id
         )
         consignee_address = picking.partner_id
-        return [
-            self._prepare_schenker_address(shipper_address, "SHIPPER"),
-            self._prepare_schenker_address(consignee_address),
-        ]
+        shipper_address = self._prepare_schenker_address(shipper_address, "SHIPPER")
+        consignee_address = self._prepare_schenker_address(consignee_address)
+        result = [shipper_address, consignee_address]
+        invoice_address = False
+        if self.schenker_partner_invoice_id:
+            invoice_address = self._prepare_schenker_address(
+                self.schenker_partner_invoice_id, "INVOICE"
+            )
+            result.append(invoice_address)
+        if self.schenker_address_number:
+            address = invoice_address or shipper_address
+            address["schenkerAddressId"] = self.schenker_address_number
+        return result
 
     def _schenker_shipping_product(self):
         """Gets the proper shipping product according to the shipping type

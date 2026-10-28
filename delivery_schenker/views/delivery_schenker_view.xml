@@ -73,6 +73,10 @@
                                 required="delivery_type == 'schenker'"
                             />
                         </group>
+                        <group string="Invoicing">
+                            <field name="schenker_partner_invoice_id" />
+                            <field name="schenker_address_number" />
+                        </group>
                     </group>
                 </page>
             </xpath>

@@ -153,6 +153,53 @@ class TestDeliverySchenker(TransactionCase):
         self.assertIn("T00:00:00", dates["pickUpDateFrom"])
         self.assertIn("T23:59:59", dates["pickUpDateTo"])
 
+    def test_invoice_address_and_schenker_address_id(self):
+        shipper = self.env["res.partner"].create(
+            {
+                "name": "Shipper",
+                "city": "Lyon",
+                "country_id": self.env.ref("base.fr").id,
+            }
+        )
+        customer = self.env["res.partner"].create(
+            {
+                "name": "Customer",
+                "city": "Paris",
+                "country_id": self.env.ref("base.fr").id,
+            }
+        )
+        invoice = self.env["res.partner"].create(
+            {
+                "name": "Invoice",
+                "city": "Nice",
+                "country_id": self.env.ref("base.fr").id,
+            }
+        )
+        picking = self._picking()
+        picking.picking_type_id.warehouse_id.partner_id = shipper
+        picking.partner_id = customer
+
+        # Without Address ID or Invoice Address: SHIPPER and CONSIGNEE only
+        addresses = self.carrier._schenker_shipping_address(picking)
+        self.assertEqual([a["type"] for a in addresses], ["SHIPPER", "CONSIGNEE"])
+        self.assertFalse(any("schenkerAddressId" in a for a in addresses))
+
+        # Address ID without Invoice Address goes to the SHIPPER
+        self.carrier.schenker_address_number = "12345"
+        addresses = self.carrier._schenker_shipping_address(picking)
+        self.assertEqual(addresses[0]["schenkerAddressId"], "12345")
+        self.assertNotIn("schenkerAddressId", addresses[1])
+
+        # With an Invoice Address, it is sent and carries the Address ID
+        self.carrier.schenker_partner_invoice_id = invoice
+        addresses = self.carrier._schenker_shipping_address(picking)
+        self.assertEqual(
+            [a["type"] for a in addresses], ["SHIPPER", "CONSIGNEE", "INVOICE"]
+        )
+        self.assertEqual(addresses[2]["name1"], "Invoice")
+        self.assertEqual(addresses[2]["schenkerAddressId"], "12345")
+        self.assertNotIn("schenkerAddressId", addresses[0])
+
     def test_shipping_information_and_preparation(self):
         package_type = SimpleNamespace(
             shipper_package_code="BOX", schenker_stackable=True

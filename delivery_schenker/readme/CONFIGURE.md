@@ -11,3 +11,11 @@ To configure a Schenker delivery method:
 To make tests, set the carrier environment to test from the smart
 button. Don't forget to set it to production once you're ready to use
 the delivery method!
+
+Optionally, in the *Invoicing* group of the Schenker configuration:
+
+- *Invoice Address*: if set, this contact is sent to Schenker as the
+  INVOICE address of every booking.
+- *Address ID*: the ID Schenker assigned to you. It is sent as
+  `schenkerAddressId` on the invoice address if one is set, otherwise on
+  the sender.

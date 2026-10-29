@@ -200,6 +200,38 @@ class TestDeliverySchenker(TransactionCase):
         self.assertEqual(addresses[2]["schenkerAddressId"], "12345")
         self.assertNotIn("schenkerAddressId", addresses[0])
 
+    def test_address_name_fallback_and_optional_state(self):
+        company = self.env["res.partner"].create(
+            {
+                "name": "Parent Company",
+                "is_company": True,
+                "city": "Lyon",
+                "country_id": self.env.ref("base.fr").id,
+            }
+        )
+        delivery = self.env["res.partner"].create(
+            {
+                "type": "delivery",
+                "parent_id": company.id,
+                "street": "1 Rue du Quai",
+                "city": "Lyon",
+                "country_id": self.env.ref("base.fr").id,
+            }
+        )
+        vals = self.carrier._prepare_schenker_address(delivery)
+        # Delivery addresses have no name of their own
+        self.assertEqual(vals["name1"], "Parent Company")
+        # Empty state fields are left out
+        self.assertNotIn("stateCode", vals)
+        self.assertNotIn("stateName", vals)
+
+        state = self.env["res.country.state"].search([("code", "!=", False)], limit=1)
+        company.write({"country_id": state.country_id.id, "state_id": state.id})
+        vals = self.carrier._prepare_schenker_address(company)
+        self.assertEqual(vals["name1"], "Parent Company")
+        self.assertEqual(vals["stateCode"], state.code)
+        self.assertEqual(vals["stateName"], state.name)
+
     def test_shipping_information_and_preparation(self):
         package_type = SimpleNamespace(
             shipper_package_code="BOX", schenker_stackable=True

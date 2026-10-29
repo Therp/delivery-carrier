@@ -247,14 +247,12 @@ class DeliveryCarrier(models.Model):
         """
         vals = {
             "type": address_type,
-            "name1": partner.name,
+            "name1": partner.name or partner.parent_name,
             "locationType": location_type,  # POSTAL or PHYSICAL
             "personType": person_type,  # PERSON OR COMPANY
             "street": partner.street,
             "postalCode": partner.zip,
             "city": partner.city,
-            "stateCode": partner.state_id.code,
-            "stateName": partner.state_id.name,
             "countryCode": partner.country_id.code,
             "preferredLanguage": self.env["res.lang"]._lang_get(partner.lang).iso_code,
         }
@@ -268,6 +266,10 @@ class DeliveryCarrier(models.Model):
             vals["phone"] = partner.phone
         if partner.street2:
             vals["street2"] = partner.street2
+        if partner.state_id.code:
+            vals["stateCode"] = partner.state_id.code
+        if partner.state_id.name:
+            vals["stateName"] = partner.state_id.name
         return vals
 
     def _schenker_shipping_address(self, picking):
